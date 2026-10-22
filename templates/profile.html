@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="progress">Profile {{ pos }} of {{ total }}</div>
+<article class="profile-card" id="profile-card" data-profile="{{ prof.profile_id }}">
+  <img class="profile-photo" id="profile-photo"
+       src="{{ url_for('static', filename='stimuli/' + prof.image_file) }}"
+       alt="Profile photo" width="600" height="750">
+  {# Fixed slot under the photo. Same size in both conditions; only its content differs. #}
+  <div class="origin-slot" id="origin-slot">
+    {%- if show_label -%}
+    <span class="origin-label" id="origin-label" tabindex="0">{{ label_text }}</span>
+    {%- endif -%}
+  </div>
+  <div class="profile-text" id="profile-text">
+    <h2>{{ prof.display_name }}, {{ prof.age }}</h2>
+    <p>{{ prof.bio }}</p>
+  </div>
+</article>
+
+<form method="post" class="card" id="rating-form">
+  {% if error %}<p class="error">Please choose Like or Skip and answer all six statements.</p>{% endif %}
+  <div class="decision">
+    <label class="choice"><input type="radio" name="decision" value="like" data-ev="like"> Like</label>
+    <label class="choice"><input type="radio" name="decision" value="skip" data-ev="skip"> Skip</label>
+  </div>
+  <table class="scale">
+    <tr><th></th>{% for v in range(1, 8) %}<th>{{ v }}</th>{% endfor %}</tr>
+    {% for n, construct, text in items %}
+    <tr>
+      <td class="stmt">{{ text }}</td>
+      {% for v in range(1, 8) %}
+      <td><input type="radio" name="item{{ n }}" value="{{ v }}" aria-label="{{ text }} {{ v }}"></td>
+      {% endfor %}
+    </tr>
+    {% endfor %}
+  </table>
+  <p class="small">1 = strongly disagree, 7 = strongly agree</p>
+  <button type="submit">{{ 'Next profile' if pos < total else 'Continue' }}</button>
+</form>
+<script>
+  window.STUDY = {code: "{{ code }}", profile: "{{ prof.profile_id }}"};
+</script>
+<script src="{{ url_for('static', filename='events.js') }}"></script>
+{% endblock %}

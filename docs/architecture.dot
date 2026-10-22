@@ -1,0 +1,15 @@
+digraph G {
+  rankdir=TB; fontname="Helvetica"; node [fontname="Helvetica", fontsize=11, shape=box, style="rounded,filled", fillcolor="#eef2f7", color="#5b6b7b"];
+  edge [fontname="Helvetica", fontsize=9, color="#5b6b7b"];
+  P [label="Participant\n(browser / phone)", shape=ellipse, fillcolor="#ffffff"];
+  subgraph cluster_fe { label="Frontend (HTML/CSS + events.js)"; style="rounded"; color="#9aa7b4";
+    C [label="Consent &\neligibility"]; I [label="Intro\n(study code)"]; PR [label="Profile card\nphoto | label slot | text\n+ Like/Skip + 6 ratings"]; PS [label="Recall check,\nopen answer,\ndemographics"]; D [label="Debrief"]; }
+  subgraph cluster_be { label="Backend (Flask, app.py)"; style="rounded"; color="#9aa7b4";
+    R [label="Randomization\npermuted blocks (size 4)\n+ per-participant order"]; V [label="Validation\n(1-7, all items,\nlike/skip)"]; EV [label="/api/events\nview time, like/skip,\nlabel hover/click"]; }
+  DB [label="SQLite\nallocation | participants\nconsent_records | profiles\nratings | events | post_survey", shape=cylinder, fillcolor="#fff7e6"];
+  ST [label="Stimuli\n6 images + manifest\n(SHA-256)", shape=folder, fillcolor="#fff7e6"];
+  EX [label="export.py\nparticipant-level CSV,\nexclusion flags"]; AN [label="analysis/analyze.py\nalpha, Welch CI, Hedges g,\nHolm, Mann-Whitney"];
+  P -> C; C -> R [label="consent=yes &\neligible"]; R -> DB [label="condition,\nslot, order"]; R -> I -> PR;
+  ST -> PR [label="same files\nboth conditions"]; PR -> V [label="POST ratings"]; V -> DB; PR -> EV [label="JSON beacon"]; EV -> DB;
+  PR -> PS -> DB; PS -> D; DB -> EX -> AN;
+}

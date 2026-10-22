@@ -1,0 +1,56 @@
+[
+  {
+    "profile_id": "P1",
+    "display_name": "Aruzhan",
+    "age": 21,
+    "bio": "Third-year student. I like long walks along the Yesil embankment, board games and trying new coffee places.",
+    "image_file": "P1.png",
+    "image_sha256": "1046a31844bc67ce9d349c5ad9d37ff0541568aea3cdfcf1f31be5c24beb312e",
+    "placeholder": true
+  },
+  {
+    "profile_id": "P2",
+    "display_name": "Daniyar",
+    "age": 22,
+    "bio": "Into football on weekends and learning to cook. Looking for someone to explore the city with.",
+    "image_file": "P2.png",
+    "image_sha256": "85c26ccc2b136dc9fbd8111ceaa8559733c1060bea54b8f3a46433eb5a79e249",
+    "placeholder": true
+  },
+  {
+    "profile_id": "P3",
+    "display_name": "Madina",
+    "age": 20,
+    "bio": "I read a lot, mostly fantasy and history. Weekends are for the cinema or a quiet park.",
+    "image_file": "P3.png",
+    "image_sha256": "ba2bb1800b7ee0c5e9ba8d92b268b38ce41df186097256b4d2793523ae55cb9a",
+    "placeholder": true
+  },
+  {
+    "profile_id": "P4",
+    "display_name": "Timur",
+    "age": 23,
+    "bio": "Engineering student who enjoys cycling and photography. Always up for a good conversation.",
+    "image_file": "P4.png",
+    "image_sha256": "c4554e9767f109987753080491a0ce7daad653a0a4d64fbd108f9437f5eb1cbb",
+    "placeholder": true
+  },
+  {
+    "profile_id": "P5",
+    "display_name": "Aigerim",
+    "age": 22,
+    "bio": "I draw, listen to podcasts and love travelling around Kazakhstan by train.",
+    "image_file": "P5.png",
+    "image_sha256": "7bebe65d0f65f1ba4604c0eec5d2f71bb265e514685eb8c412aa640b206b9084",
+    "placeholder": true
+  },
+  {
+    "profile_id": "P6",
+    "display_name": "Nurlan",
+    "age": 24,
+    "bio": "Gym in the morning, coding in the evening. I'd like to meet someone calm and kind.",
+    "image_file": "P6.png",
+    "image_sha256": "cd981484fbdf706c02f06a2ce0b68e65a7d1bb6131bcd676eef88385f95cae29",
+    "placeholder": true
+  }
+]

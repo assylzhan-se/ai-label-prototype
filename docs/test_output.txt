@@ -1,0 +1,21 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.16, pytest-9.1.1, pluggy-1.7.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /home/claude/ai-label-prototype
+plugins: platformdirs-4.12.3, anyio-4.15.1
+collecting ... collected 10 items
+
+tests/test_browser.py::test_T2c_layout_geometry_identical PASSED         [ 10%]
+tests/test_browser.py::test_T5_label_visibility_on_small_screen PASSED   [ 20%]
+tests/test_browser.py::test_T6_rating_tap_targets_on_small_phone XFAIL   [ 30%]
+tests/test_core.py::test_T1_label_shown_only_in_label_condition PASSED   [ 40%]
+tests/test_core.py::test_T2a_stimulus_hashes_match_manifest PASSED       [ 50%]
+tests/test_core.py::test_T2b_profile_markup_identical_except_label PASSED [ 60%]
+tests/test_core.py::test_T3_block_randomization_balance PASSED           [ 70%]
+tests/test_core.py::test_T4_ratings_saved_with_correct_code_and_condition PASSED [ 80%]
+tests/test_core.py::test_T4b_invalid_or_incomplete_input_not_saved PASSED [ 90%]
+tests/test_core.py::test_T4c_ineligible_or_no_consent_stores_nothing PASSED [100%]
+
+=========================== short test summary info ============================
+XFAIL tests/test_browser.py::test_T6_rating_tap_targets_on_small_phone - KNOWN ISSUE found in first implementation: 1-7 rating radios are below the WCAG 2.2 (SC 2.5.8) 24x24 px minimum target size on a 360 px phone
+========================= 9 passed, 1 xfailed in 8.66s =========================

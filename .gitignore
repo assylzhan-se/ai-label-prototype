@@ -1,0 +1,5 @@
+data/
+__pycache__/
+.pytest_cache/
+docs/screenshots/_screens.db
+.venv/

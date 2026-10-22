@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Profile impressions study</h1>
+<p>This is a student research project at Astana IT University. You will see six
+<b>fictional</b> dating-app profiles in a research prototype and answer short questions
+about your impressions. Some images may be synthetic. It takes about 10 minutes.</p>
+<ul class="small">
+  <li>Participation is voluntary and has no effect on grades. You can stop at any time.</li>
+  <li>We do not collect your name, e-mail, photos or account data. Responses are stored under a random study code.</li>
+  <li>Results are reported only in aggregate. You can ask for your data to be deleted using your study code.</li>
+</ul>
+<form method="post" action="{{ url_for('consent') }}" class="card">
+  <input type="hidden" name="is_test" value="{{ '1' if is_test else '0' }}">
+  <fieldset><legend>Eligibility</legend>
+    <label><input type="checkbox" name="is_student" value="yes"> I am a current AITU student</label>
+    <label><input type="checkbox" name="age_18_25" value="yes"> I am 18&ndash;25 years old</label>
+    <label><input type="checkbox" name="dating_app" value="yes"> I have used at least one dating app</label>
+  </fieldset>
+  <fieldset><legend>Consent</legend>
+    <label><input type="radio" name="consent" value="yes"> I have read the information and agree to take part</label>
+    <label><input type="radio" name="consent" value="no"> I do not agree</label>
+  </fieldset>
+  <button type="submit">Continue</button>
+</form>
+{% endblock %}

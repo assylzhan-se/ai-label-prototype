@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Before you start</h1>
+<p>Your study code is <b class="code">{{ code }}</b>. Please save it if you may want your data deleted later.</p>
+<p>This prototype is a <b>research simulation</b>. The profiles are fictional, and any labels
+shown in the app do not verify a person's identity or safety.</p>
+<p>For each profile, look at it as you would in a dating app, choose <i>Like</i> or <i>Skip</i>,
+and rate six statements from 1 (strongly disagree) to 7 (strongly agree).</p>
+<a class="button" href="{{ url_for('profile', code=code, pos=1) }}">Start</a>
+{% endblock %}

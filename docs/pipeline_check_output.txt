@@ -1,0 +1,29 @@
+==============================================================================
+PIPELINE CHECK ON SIMULATED TEST SESSIONS - THESE NUMBERS ARE NOT STUDY RESULTS
+==============================================================================
+Sensitivity (n=30/group, alpha=.05 two-sided, power=.80): minimum detectable d = 0.736
+
+Rows: 40; excluded: 17 ({'too_fast': 16, 'incomplete': 1})
+
+Descriptives (participant-level scale means, 1-7):
+          auth_score             trust_score            
+               count  mean   std       count  mean   std
+condition                                               
+0                 12  4.04  0.71          12  4.12  0.80
+1                 11  3.94  1.13          11  3.82  1.16
+
+Cronbach's alpha: authenticity=0.93, trust=0.95; AUTH-TRUST r=0.93 (p=0.000)
+
+--- Group comparison: all included participants (label=1 minus no-label=0) ---
+auth_score   n=11/12  diff=-0.10 [95% CI -0.94, +0.74]  Welch t(16.6)=-0.26 p=0.800 p_Holm=0.963  Hedges g=-0.11 [-0.92, +0.71]  Mann-Whitney p=0.423
+trust_score  n=11/12  diff=-0.30 [95% CI -1.18, +0.58]  Welch t(17.6)=-0.72 p=0.482 p_Holm=0.963  Hedges g=-0.29 [-1.12, +0.53]  Mann-Whitney p=0.371
+
+Label recall by condition (manipulation check):
+label_recall  no  not_sure  yes
+condition                      
+0              3         2    7
+1              4         2    5
+
+--- Group comparison: sensitivity: label-condition participants who did not report noticing the label removed (label=1 minus no-label=0) ---
+auth_score   n=5/12  diff=-0.66 [95% CI -1.92, +0.59]  Welch t(5.7)=-1.31 p=0.240 p_Holm=0.328  Hedges g=-0.78 [-1.86, +0.30]  Mann-Whitney p=0.102
+trust_score  n=5/12  diff=-0.90 [95% CI -2.30, +0.50]  Welch t(5.7)=-1.60 p=0.164 p_Holm=0.328  Hedges g=-0.94 [-2.03, +0.15]  Mann-Whitney p=0.064

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>A few last questions</h1>
+<form method="post" class="card">
+  {% if error %}<p class="error">Please answer the first question.</p>{% endif %}
+  <fieldset><legend>Did you notice any information about how the profile photos were created?</legend>
+    <label><input type="radio" name="label_recall" value="yes"> Yes</label>
+    <label><input type="radio" name="label_recall" value="no"> No</label>
+    <label><input type="radio" name="label_recall" value="not_sure"> Not sure</label>
+  </fieldset>
+  <label class="block">Optional: briefly explain how you judged the profiles.
+    <textarea name="open_text" rows="4" maxlength="1000"></textarea></label>
+  <fieldset><legend>About you (optional)</legend>
+    <label class="block">Gender
+      <select name="gender"><option value="">Prefer not to say</option><option>Female</option><option>Male</option></select></label>
+    <label class="block">Year of study
+      <select name="study_year"><option value="">Prefer not to say</option><option>1</option><option>2</option><option>3</option><option>4+</option></select></label>
+    <label class="block">How often do you use dating apps?
+      <select name="app_use_freq"><option value="">Prefer not to say</option><option>Rarely</option><option>Monthly</option><option>Weekly</option><option>Daily</option></select></label>
+  </fieldset>
+  <button type="submit">Finish</button>
+</form>
+{% endblock %}
