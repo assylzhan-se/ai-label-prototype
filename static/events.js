@@ -16,11 +16,10 @@
   push("view_start");
   document.querySelectorAll("[data-ev]").forEach(el =>
     el.addEventListener("change", () => push(el.dataset.ev)));
-  const label = document.getElementById("origin-label");
-  if (label) {
+  document.querySelectorAll(".origin-label").forEach(label => {
     label.addEventListener("mouseenter", () => push("label_hover"));
     label.addEventListener("click", () => push("label_click"));
-  }
+  });
   document.getElementById("rating-form").addEventListener("submit", () => {
     push("view_end", {value_ms: Math.round(performance.now() - t0)});
     flush(true);

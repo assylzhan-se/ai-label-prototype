@@ -68,26 +68,56 @@ def test_T5_label_visibility_on_small_screen(server, client, con):
         print(f"\n[T5] viewport=360x640 label_top={lab['y']:.0f}px label_bottom={lab['y']+lab['height']:.0f}px "
               f"first_rating_item_top={first_item['y']:.0f}px")
         assert lab["y"] + lab["height"] <= vh, "label is below the fold on first view"
-        # The participant must scroll to the rating items; is the label still on screen then?
-        page.locator("input[name=item1]").first.scroll_into_view_if_needed()
-        lab_after = page.locator("#origin-label").bounding_box()
-        print(f"[T5] after scrolling to first rating item: label_top={lab_after['y']:.0f}px")
-        assert lab_after["y"] >= 0, "label scrolled out of view while rating"
+        # Visibility while rating is checked by T7 (sticky origin bar, v3).
         b.close()
 
 
-@pytest.mark.xfail(strict=True, reason="KNOWN ISSUE found in first implementation: 1-7 rating radios "
-                   "are below the WCAG 2.2 (SC 2.5.8) 24x24 px minimum target size on a 360 px phone")
 def test_T6_rating_tap_targets_on_small_phone(server, client, con):
+    """v1 (commit 39569ff) FAILED: radios 13x13 px in 21 px cells.
+    v2: each scale point is a full tappable button; must be >= 24x24 px (WCAG 2.2 SC 2.5.8),
+    target 44 px height."""
     code = enrol(client)
     with pw.sync_playwright() as p:
         b = p.chromium.launch()
         page = b.new_page(viewport={"width": 360, "height": 640})
         page.goto(f"{server}/s/{code}/profile/1")
         page.wait_for_load_state("networkidle")
-        w, h = page.evaluate("""() => { const r = document.querySelector('table.scale input[type=radio]')
-                                .getBoundingClientRect(); return [r.width, r.height]; }""")
-        cw = page.evaluate("() => document.querySelector('table.scale td:not(.stmt)').getBoundingClientRect().width")
-        print(f"\n[T6] radio {w:.0f}x{h:.0f}px, cell width {cw:.0f}px (minimum 24x24)")
+        sizes = page.evaluate("""() => [...document.querySelectorAll('.points .pt')]
+            .map(e => { const r = e.getBoundingClientRect(); return [r.width, r.height]; })""")
+        sw = page.evaluate("document.documentElement.scrollWidth")
+        w = min(s[0] for s in sizes); h = min(s[1] for s in sizes)
+        print(f"\n[T6] {len(sizes)} tap targets, smallest {w:.0f}x{h:.0f}px, page scrollWidth {sw}px")
+        # tapping the button (not the tiny radio) selects the value
+        page.locator(".points").first.locator(".pt").nth(4).click()
+        checked = page.locator("input[name=item1]:checked").get_attribute("value")
         b.close()
-    assert min(w, h) >= 24 and cw >= 24
+    assert len(sizes) == 42
+    assert w >= 24 and h >= 44
+    assert sw <= 360, "horizontal scroll on a 360 px phone"
+    assert checked == "5"
+
+
+def test_T7_label_visible_while_rating_and_bar_identical(server, client, con):
+    """v2 measurement: on 360x640 the label left the screen while rating items 5-6.
+    v3: a sticky origin bar in the rating form; must show the label for every item (label condition)
+    and have identical geometry in both conditions."""
+    codes = codes_by_condition(client, con)
+    with pw.sync_playwright() as p:
+        b = p.chromium.launch()
+        for vw, vh in ((360, 640), (390, 844), (1280, 900)):
+            page = b.new_page(viewport={"width": vw, "height": vh})
+            page.goto(f"{server}/s/{codes[1]}/profile/1"); page.wait_for_load_state("networkidle")
+            for n in range(1, 7):
+                page.locator(f".item:nth-child({n}) .points").scroll_into_view_if_needed()
+                visible = page.evaluate("""(h) => [...document.querySelectorAll('.origin-label')].some(e => {
+                    const r = e.getBoundingClientRect(); return r.top >= 0 && r.bottom <= h; })""", vh)
+                assert visible, f"label not visible at {vw}x{vh} while rating item {n}"
+            geo = {}
+            for cond, code in codes.items():   # same profile (P1) in both conditions
+                order = con.execute("SELECT profile_order FROM participants WHERE study_code=?",
+                                    (code,)).fetchone()[0].split(",")
+                page.goto(f"{server}/s/{code}/profile/{order.index('P1') + 1}"); page.wait_for_load_state("networkidle")
+                geo[cond] = page.locator("#origin-slot-2").bounding_box()
+            assert geo[0] == geo[1], f"sticky bar differs between conditions at {vw}x{vh}"
+            page.close()
+        b.close()

@@ -9,7 +9,10 @@ import os
 import config
 import db
 
-MIN_SECONDS_PER_PROFILE = 5  # provisional speeding threshold; fixed after the pilot
+# Speeding rule, fixed before any outcome data were inspected (deviation from v1, see report):
+# a participant is "too fast" if the MEAN viewing+rating time per profile is below 5 s.
+# (v1 used the minimum over profiles, which excluded a whole session for one quick profile.)
+MIN_MEAN_SECONDS_PER_PROFILE = 5
 
 
 def build_rows(con, include_test=False):
@@ -35,17 +38,47 @@ def build_rows(con, include_test=False):
         r["min_view_ms"] = vt[1]
         ps = con.execute("SELECT * FROM post_survey WHERE study_code=?", (code,)).fetchone()
         r["label_recall"] = ps["label_recall"] if ps else None
+        for k in ("gender", "study_year", "app_use_freq"):
+            r[k] = ps[k] if ps else None
+        r["has_open_text"] = int(bool(ps and ps["open_text"]))
+        r["label_hovers"] = con.execute("SELECT COUNT(*) FROM events WHERE study_code=? AND event_type IN ('label_hover','label_click')",
+                                        (code,)).fetchone()[0]
+        r["created_at"] = p["created_at"]; r["completed_at"] = p["completed_at"]
         reasons = []
         if p["status"] != "completed":
             reasons.append("incomplete")
         if r["auth_n_items"] < 18 or r["trust_n_items"] < 18:
             reasons.append("missing_ratings")
-        if r["min_view_ms"] is not None and r["min_view_ms"] < MIN_SECONDS_PER_PROFILE * 1000:
+        if r["mean_view_ms"] is not None and r["mean_view_ms"] < MIN_MEAN_SECONDS_PER_PROFILE * 1000:
             reasons.append("too_fast")
+        # Quality flag (reported, used only in a sensitivity analysis): identical answer to all 36 items
+        sd = con.execute("SELECT COUNT(DISTINCT value) FROM ratings WHERE study_code=?", (code,)).fetchone()[0]
+        r["straightlining"] = int(r["auth_n_items"] + r["trust_n_items"] == 36 and sd == 1)
         r["exclude"] = int(bool(reasons))
         r["exclude_reason"] = ";".join(reasons)
         rows.append(r)
     return rows
+
+
+def build_rating_rows(con, include_test=False):
+    """Long format: one row per participant x profile (profile-level scale means)."""
+    q = """SELECT r.study_code, p.condition, p.is_test, r.profile_id, r.position,
+                  AVG(CASE WHEN r.construct='AUTH' THEN r.value END) AS auth,
+                  AVG(CASE WHEN r.construct='TRUST' THEN r.value END) AS trust,
+                  MAX(r.decision) AS decision
+           FROM ratings r JOIN participants p USING (study_code)""" + \
+        ("" if include_test else " WHERE p.is_test=0") + \
+        " GROUP BY r.study_code, r.profile_id ORDER BY p.alloc_slot, r.position"
+    return [dict(x) for x in con.execute(q)]
+
+
+def write_csv(path, rows):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w", newline="", encoding="utf-8") as fh:
+        if rows:
+            w = csv.DictWriter(fh, fieldnames=list(rows[0].keys()))
+            w.writeheader()
+            w.writerows(rows)
 
 
 def main():
@@ -56,13 +89,10 @@ def main():
     a = ap.parse_args()
     con = db.connect(a.db)
     rows = build_rows(con, a.include_test)
-    os.makedirs(os.path.dirname(a.out), exist_ok=True)
-    with open(a.out, "w", newline="", encoding="utf-8") as fh:
-        if rows:
-            w = csv.DictWriter(fh, fieldnames=list(rows[0].keys()))
-            w.writeheader()
-            w.writerows(rows)
-    print(f"Exported {len(rows)} participant rows to {a.out}")
+    write_csv(a.out, rows)
+    long_path = a.out.replace(".csv", "_profile_level.csv")
+    write_csv(long_path, build_rating_rows(con, a.include_test))
+    print(f"Exported {len(rows)} participant rows to {a.out} (+ {long_path})")
 
 
 if __name__ == "__main__":

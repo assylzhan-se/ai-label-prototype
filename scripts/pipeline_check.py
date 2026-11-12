@@ -34,7 +34,11 @@ for i in range(N):
             {"type": "view_end", "profile_id": None, "value_ms": rng.randint(3000, 30000), "ts": 0}]})
     if i == N - 1:
         break                                    # last session left incomplete on purpose
-    c.post(f"/s/{code}/post", data={"label_recall": rng.choice(["yes", "yes", "no", "not_sure"])})
+    c.post(f"/s/{code}/post", data={"label_recall": rng.choice(["yes", "yes", "no", "not_sure"]),
+                                    "open_text": rng.choice(["", "", "simulated answer"]),
+                                    "gender": rng.choice(["Female", "Male", ""]),
+                                    "study_year": rng.choice(["1", "2", "3", "4+"]),
+                                    "app_use_freq": rng.choice(["Rarely", "Monthly", "Weekly"])})
 con = db.connect(dbp)
 rows = export.build_rows(con, include_test=True)
 import csv  # noqa: E402

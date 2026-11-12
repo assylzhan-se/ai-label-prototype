@@ -44,14 +44,25 @@ def sha256(path):
         return hashlib.sha256(fh.read()).hexdigest()
 
 
+def find_image(pid):
+    """Final images may be .png, .jpg, .jpeg or .webp, named P1..P6."""
+    hits = [f for f in os.listdir(OUT)
+            if os.path.splitext(f)[0] == pid and os.path.splitext(f)[1].lower() in (".png", ".jpg", ".jpeg", ".webp")]
+    if len(hits) != 1:
+        sys.exit(f"Expected exactly one image named {pid}.png/.jpg/.webp in {OUT}, found: {hits}")
+    return hits[0]
+
+
 def main(manifest_only=False):
     os.makedirs(OUT, exist_ok=True)
     manifest = []
     for (pid, name, age, bio), bg in zip(PROFILES, BG):
-        fname = f"{pid}.png"
+        if manifest_only:
+            fname = find_image(pid)
+        else:
+            fname = f"{pid}.png"
+            draw_placeholder(os.path.join(OUT, fname), bg)
         fpath = os.path.join(OUT, fname)
-        if not manifest_only:
-            draw_placeholder(fpath, bg)
         manifest.append({"profile_id": pid, "display_name": name, "age": age,
                          "bio": bio, "image_file": fname, "image_sha256": sha256(fpath),
                          "placeholder": not manifest_only})

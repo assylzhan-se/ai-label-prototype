@@ -34,10 +34,9 @@ with sync_playwright() as p:
     # tap-target measurement on a small phone
     sp = b.new_page(viewport={"width": 360, "height": 640})
     sp.goto(f"{base}/s/{codes[1]}/profile/1"); sp.wait_for_load_state("networkidle")
-    sizes = sp.evaluate("""() => [...document.querySelectorAll('table.scale input[type=radio]')]
+    sizes = sp.evaluate("""() => [...document.querySelectorAll('.points .pt')]
         .map(e => {const r = e.getBoundingClientRect(); return [r.width, r.height];})""")
-    cells = sp.evaluate("""() => { const r = document.querySelector('table.scale td:not(.stmt)').getBoundingClientRect(); return [r.width, r.height]; }""")
-    print(f"360px phone: {len(sizes)} rating radios, radio size {sizes[0][0]:.0f}x{sizes[0][1]:.0f}px, cell {cells[0]:.0f}x{cells[1]:.0f}px")
+    print(f"360px phone: {len(sizes)} tap targets, smallest {min(s[0] for s in sizes):.0f}x{min(s[1] for s in sizes):.0f}px")
     b.close()
 srv.shutdown()
 print("Saved:", sorted(f for f in os.listdir(OUT) if f.endswith(".png")))
