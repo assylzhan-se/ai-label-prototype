@@ -25,7 +25,8 @@
     <span class="origin-label" id="origin-label-2">{{ label_text }}</span>
     {%- endif -%}
   </div>
-  {% if error %}<p class="error">Please choose Like or Skip and answer all six statements.</p>{% endif %}
+  {% if error == 'too_fast' %}<p class="error">Please take a little more time to look at the profile before continuing.</p>
+  {% elif error %}<p class="error">Please choose Like or Skip and answer all statements.</p>{% endif %}
   <div class="decision">
     <label class="choice"><input type="radio" name="decision" value="like" data-ev="like"> Like</label>
     <label class="choice"><input type="radio" name="decision" value="skip" data-ev="skip"> Skip</label>
@@ -42,9 +43,20 @@
         {% endfor %}
       </div>
     </fieldset>
+    {% if attention and n == 3 %}
+    <fieldset class="item" id="attention-item">
+      <legend class="stmt">{{ attention_text }}</legend>
+      <div class="points">
+        {% for v in range(1, 8) %}
+        <label class="pt"><input type="radio" name="attn" value="{{ v }}" aria-label="attention {{ v }}"><span>{{ v }}</span></label>
+        {% endfor %}
+      </div>
+    </fieldset>
+    {% endif %}
     {% endfor %}
   </div>
-  <button type="submit">{{ 'Next profile' if pos < total else 'Continue' }}</button>
+  <button type="submit" id="next-btn" data-min="{{ min_seconds }}">{{ 'Next profile' if pos < total else 'Continue' }}</button>
+  <span class="small" id="wait-note"></span>
 </form>
 <script>
   window.STUDY = {code: "{{ code }}", profile: "{{ prof.profile_id }}"};

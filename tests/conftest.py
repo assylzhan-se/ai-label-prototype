@@ -8,12 +8,12 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from app import create_app  # noqa: E402
 import db  # noqa: E402
 
-ELIGIBLE = {"is_student": "yes", "age_18_25": "yes", "dating_app": "yes", "consent": "yes", "is_test": "1"}
+ELIGIBLE = {"is_student": "yes", "age_18_25": "yes", "dating_app": "yes", "consent": "yes", "is_test": "1", "gender": "F"}
 
 
 @pytest.fixture
 def app(tmp_path):
-    return create_app(db_path=str(tmp_path / "test.db"))
+    return create_app(db_path=str(tmp_path / "test.db"), min_seconds=0)
 
 
 @pytest.fixture

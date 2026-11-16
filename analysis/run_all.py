@@ -201,7 +201,8 @@ def main():
         say("=" * 78)
     con = db.connect(a.db)
     raw = pd.DataFrame(export.build_rows(con, a.include_test))
-    long = pd.DataFrame(export.build_rating_rows(con, a.include_test))
+    long_all = pd.DataFrame(export.build_rating_rows(con, a.include_test))
+    long = long_all[~long_all.profile_id.str.startswith("R")].copy()      # main analysis: six AI profiles only
     if raw.empty:
         sys.exit("No participants in the database.")
     n_test = con.execute("SELECT COUNT(*) FROM participants WHERE is_test=1").fetchone()[0]
@@ -220,6 +221,8 @@ def main():
                      "incomplete": int((reasons == "incomplete").sum()),
                      "missing_ratings": int((reasons == "missing_ratings").sum()),
                      "too_fast": int((reasons == "too_fast").sum()),
+                     "attention_fail": int((reasons == "attention_fail").sum()),
+                     "repeat_device": int((reasons == "repeat_device").sum()),
                      "excluded_total": int(d.exclude.sum()), "analysed": int((d.exclude == 0).sum()),
                      "straightlining_flag": int(d.straightlining.sum())})
     flow = pd.DataFrame(flow)
@@ -236,7 +239,15 @@ def main():
 
     df = raw[raw.exclude == 0].copy()
     lng = long[long.study_code.isin(df.study_code)].copy()
-    keep = ["study_code", "condition", "condition_name", "auth_score", "trust_score"] + \
+    for col in ("label_text", "mc_correct", "source", "attention_value", "wave"):
+        if col not in raw:
+            raw[col] = None
+    for col in ("real_auth", "real_trust"):
+        if col not in raw:
+            raw[col] = None
+    keep = ["study_code", "condition", "condition_name", "auth_score", "trust_score", "real_auth", "real_trust",
+            "label_text", "mc_correct",
+            "source", "attention_value", "wave"] + \
            [f"item{i}" for i in range(1, 7)] + ["likes", "mean_view_ms", "label_recall", "label_hovers",
                                                  "gender", "study_year", "app_use_freq", "straightlining",
                                                  "exclude", "exclude_reason"]
@@ -285,7 +296,7 @@ def main():
     a_auth = cronbach_alpha(df[["item1", "item2", "item3"]])
     a_trust = cronbach_alpha(df[["item4", "item5", "item6"]])
     # alpha at the rating level (participant x profile), a stricter view of the item set
-    r_items = pd.read_sql_query("SELECT study_code, profile_id, item_no, value FROM ratings", con)
+    r_items = pd.read_sql_query("SELECT study_code, profile_id, item_no, value FROM ratings WHERE profile_id NOT LIKE 'R%'", con)
     r_items = r_items[r_items.study_code.isin(df.study_code)].pivot_table(
         index=["study_code", "profile_id"], columns="item_no", values="value")
     a_auth_r = cronbach_alpha(r_items[[1, 2, 3]]); a_trust_r = cronbach_alpha(r_items[[4, 5, 6]])
@@ -316,8 +327,14 @@ def main():
     # ---- 5. robustness ----
     say("\n5. ROBUSTNESS / SENSITIVITY")
     checks = [("Main analysis", df)]
-    checks.append(("Label group: only those who noticed label",
-                   df[~((df.condition == 1) & (df.label_recall != "yes"))]))
+    if df.mc_correct.notna().any():                                   # v4 two-part check
+        checks.append(("Passed manipulation check", df[df.mc_correct == 1]))
+    else:
+        checks.append(("Label group: only those who noticed label",
+                       df[~((df.condition == 1) & (df.label_recall != "yes"))]))
+    for src_, sub_ in df.groupby("source"):
+        if src_ and len(sub_) >= 4:
+            checks.append((f"Source = {src_}", sub_))
     checks.append(("No speed exclusion", raw[~raw.exclude_reason.str.contains("incomplete|missing", na=False)]))
     for thr in (3, 8):
         alt = raw[~raw.exclude_reason.str.contains("incomplete|missing", na=False)]
@@ -351,6 +368,23 @@ def main():
         say(f"Mixed model not estimable: {e}")
     fig_robustness(rob, P("fig3_robustness.png"))
 
+    # ---- 5b. exploratory: real stock photos (v4) ----
+    if "real_auth_score" not in df and "real_auth" in df and df.real_auth.notna().any():
+        say("\n5b. EXPLORATORY: TWO REAL STOCK PHOTOS (shown after the six AI profiles)")
+        rr = []
+        for out in ("real_auth", "real_trust"):
+            c_ = compare(df.dropna(subset=[out]), out)
+            rr.append(c_)
+            say(f"{out}: label M={c_['mean_label']:.2f} vs no label M={c_['mean_nolabel']:.2f}; "
+                f"diff = {c_['diff']:+.2f} [{c_['ci_low']:+.2f}, {c_['ci_high']:+.2f}], p = {c_['p']:.3f}, g = {c_['g']:+.2f}")
+        pd.DataFrame(rr).round(4).to_csv(P("tab7_real_photos.csv"), index=False)
+        for c in (0, 1):
+            sub = df[df.condition == c].dropna(subset=["real_trust"])
+            if len(sub) >= 3:
+                t_ = stats.ttest_rel(sub.real_trust, sub.trust_score)
+                say(f"  {COND[c]}: trust real minus AI photos = {(sub.real_trust - sub.trust_score).mean():+.2f}, "
+                    f"paired p = {t_.pvalue:.3f} (n = {len(sub)})")
+
     # ---- 6. manipulation check ----
     say("\n6. MANIPULATION CHECK (label recall)")
     mc = pd.crosstab(df.condition.map(COND), df.label_recall.fillna("missing"))
@@ -361,6 +395,14 @@ def main():
         if t2.shape == (2, 2):
             fe = stats.fisher_exact(t2.values)
             say(f"Fisher exact test (said 'yes' by condition): p = {fe.pvalue:.4f}")
+    if df.mc_correct.notna().any():
+        say("\nTwo-part manipulation check (v4): what did the label say?")
+        say(pd.crosstab(df.condition.map(COND), df.label_text.fillna("missing")).to_string())
+        acc = df.groupby(df.condition.map(COND)).mc_correct.mean()
+        say(f"Correct identification: {acc.round(2).to_dict()}")
+        t3 = pd.crosstab(df.condition, df.label_text == "ai")
+        if t3.shape == (2, 2):
+            say(f"Fisher exact test ('AI-generated image' chosen, by condition): p = {stats.fisher_exact(t3.values).pvalue:.4f}")
     say(f"Label hover/click events in label condition: mean {df.loc[df.condition == 1, 'label_hovers'].mean():.2f} per participant")
     say(f"\nOpen answers available for thematic coding: {len(ot)}")
 

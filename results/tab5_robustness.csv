@@ -1,0 +1,25 @@
+check,outcome,n_label,n_nolabel,diff,ci_low,ci_high,g,p,mw_p
+Main analysis,auth_score,12,9,0.7731,-0.0002,1.5465,0.9005,0.05,0.0549
+Main analysis,trust_score,12,9,0.6312,-0.0609,1.3233,0.8081,0.0714,0.1014
+Label group: only those who noticed label,auth_score,8,9,0.5301,-0.2365,1.2967,0.669,0.1607,0.2682
+Label group: only those who noticed label,trust_score,8,9,0.5038,-0.1406,1.1483,0.755,0.1158,0.1766
+No speed exclusion,auth_score,12,10,0.7861,0.0669,1.5053,0.9408,0.0338,0.0348
+No speed exclusion,trust_score,12,10,0.6343,-0.0133,1.2818,0.8348,0.0544,0.0641
+Speed threshold 3 s,auth_score,12,10,0.7861,0.0669,1.5053,0.9408,0.0338,0.0348
+Speed threshold 3 s,trust_score,12,10,0.6343,-0.0133,1.2818,0.8348,0.0544,0.0641
+Speed threshold 8 s,auth_score,2,3,2.0741,-2.7992,6.9474,1.2052,0.2145,0.2
+Speed threshold 8 s,trust_score,2,3,1.213,-7.4372,9.8631,0.9692,0.4176,0.3743
+Straight-liners removed,auth_score,12,9,0.7731,-0.0002,1.5465,0.9005,0.05,0.0549
+Straight-liners removed,trust_score,12,9,0.6312,-0.0609,1.3233,0.8081,0.0714,0.1014
+Without profile P1,auth_score,12,9,0.8778,0.0396,1.716,0.9344,0.0411,0.07
+Without profile P1,trust_score,12,9,0.7611,0.0392,1.483,0.9276,0.0399,0.0391
+Without profile P2,auth_score,12,9,0.7907,-0.0108,1.5923,0.8825,0.0528,0.0754
+Without profile P2,trust_score,12,9,0.5944,-0.0737,1.2626,0.7819,0.078,0.0591
+Without profile P3,auth_score,12,9,0.8981,0.1235,1.6728,1.0531,0.0257,0.0187
+Without profile P3,trust_score,12,9,0.613,-0.0866,1.3125,0.7685,0.0822,0.1548
+Without profile P4,auth_score,12,9,0.8,-0.0055,1.6055,0.8848,0.0514,0.135
+Without profile P4,trust_score,12,9,0.5685,-0.1391,1.2762,0.7012,0.1088,0.165
+Without profile P5,auth_score,12,9,0.613,-0.154,1.3799,0.7283,0.1097,0.1643
+Without profile P5,trust_score,12,9,0.7241,0.0199,1.4283,0.9089,0.0445,0.0385
+Without profile P6,auth_score,12,9,0.6593,-0.106,1.4246,0.7822,0.0867,0.1648
+Without profile P6,trust_score,12,9,0.5259,-0.1963,1.2481,0.6666,0.1422,0.1883

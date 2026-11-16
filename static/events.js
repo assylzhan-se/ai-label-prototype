@@ -26,3 +26,19 @@
   });
   setInterval(() => flush(false), 5000);
 })();
+
+// v4: enable the Next button only after the minimum viewing time (also enforced on the server)
+(function () {
+  const btn = document.getElementById("next-btn");
+  if (!btn) return;
+  let left = parseInt(btn.dataset.min || "0", 10);
+  const note = document.getElementById("wait-note");
+  if (left <= 0) return;
+  btn.disabled = true;
+  const tick = () => {
+    if (left <= 0) { btn.disabled = false; note.textContent = ""; return; }
+    note.textContent = "  Please look at the profile (" + left + " s)";
+    left -= 1; setTimeout(tick, 1000);
+  };
+  tick();
+})();

@@ -20,6 +20,11 @@ CREATE TABLE IF NOT EXISTS participants (
     is_test       INTEGER NOT NULL DEFAULT 0,
     profile_order TEXT    NOT NULL,        -- e.g. "P3,P1,P6,P2,P5,P4"
     status        TEXT    NOT NULL DEFAULT 'started',  -- started|rated|completed
+    wave          INTEGER NOT NULL DEFAULT 2,
+    gender        TEXT,                    -- F|M|N, asked before allocation (stratification)
+    source        TEXT,                    -- recruitment source from ?src= (e.g. chat, class)
+    device_token  TEXT,                    -- random per-browser cookie; detects repeat participation
+    attention_value INTEGER,               -- answer to the embedded attention-check statement
     created_at    TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
     completed_at  TEXT
 );
@@ -51,6 +56,12 @@ CREATE TABLE IF NOT EXISTS ratings (
     created_at  TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now')),
     PRIMARY KEY (study_code, profile_id, item_no)
 );
+CREATE TABLE IF NOT EXISTS profile_views (
+    study_code  TEXT NOT NULL,
+    position    INTEGER NOT NULL,
+    served_at   REAL NOT NULL,             -- server time (s) when the profile page was first served
+    PRIMARY KEY (study_code, position)
+);
 CREATE TABLE IF NOT EXISTS events (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
     study_code  TEXT NOT NULL REFERENCES participants(study_code),
@@ -62,7 +73,8 @@ CREATE TABLE IF NOT EXISTS events (
 );
 CREATE TABLE IF NOT EXISTS post_survey (
     study_code   TEXT PRIMARY KEY REFERENCES participants(study_code),
-    label_recall TEXT NOT NULL CHECK (label_recall IN ('yes','no','not_sure')),
+    label_recall TEXT NOT NULL CHECK (label_recall IN ('yes','no','not_sure')),   -- v4: was there a label on the photos?
+    label_text   TEXT CHECK (label_text IN ('ai','verified','edited','none')),      -- v4: what did the label say?
     open_text    TEXT,
     gender       TEXT,
     study_year   TEXT,

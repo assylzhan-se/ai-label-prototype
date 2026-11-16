@@ -1,7 +1,9 @@
 {% extends "base.html" %}
 {% block content %}
 <h1>Thank you</h1>
-{% if reason == "not_eligible" %}
+{% if reason == "already" %}
+<p>It looks like you have already taken part from this device. Thank you &mdash; one participation per person is enough.</p>
+{% elif reason == "not_eligible" %}
 <p>This study is only for current AITU students aged 18&ndash;25 who have used a dating app.
 No information about you has been stored.</p>
 {% else %}

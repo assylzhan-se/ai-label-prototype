@@ -21,8 +21,15 @@ PROFILES = [
     ("P4", "Timur", 23, "Engineering student who enjoys cycling and photography. Always up for a good conversation."),
     ("P5", "Aigerim", 22, "I draw, listen to podcasts and love travelling around Kazakhstan by train."),
     ("P6", "Nurlan", 24, "Gym in the morning, coding in the evening. I'd like to meet someone calm and kind."),
+    # v4 exploratory block: two REAL stock photos (Unsplash License), always shown after the six AI profiles
+    ("R1", "Arman", 21, "Second-year student who loves old films, chess and long talks over tea."),
+    ("R2", "Samat", 22, "Music, basketball and street food. Looking for someone to laugh with."),
 ]
-BG = ["#c9d6df", "#d8cfc4", "#cfd8c4", "#d6c9df", "#dfd2c9", "#c4d3d8"]
+BG = ["#c9d6df", "#d8cfc4", "#cfd8c4", "#d6c9df", "#dfd2c9", "#c4d3d8", "#d0d0d0", "#d0d0d0"]
+SOURCES = {
+    "R1": "Real photo by Vitaly Gariev, Unsplash License: https://unsplash.com/photos/ZOPIJ2m7cPY",
+    "R2": "Real photo by Joseph Sharp, Unsplash License: https://unsplash.com/photos/ESMhwxIls6o",
+}
 
 
 def draw_placeholder(path, bg):
@@ -65,7 +72,9 @@ def main(manifest_only=False):
         fpath = os.path.join(OUT, fname)
         manifest.append({"profile_id": pid, "display_name": name, "age": age,
                          "bio": bio, "image_file": fname, "image_sha256": sha256(fpath),
-                         "placeholder": not manifest_only})
+                         "placeholder": not manifest_only,
+                         "image_type": "real_stock" if pid.startswith("R") else "ai_generated",
+                         "source": SOURCES.get(pid, "AI-generated (text prompt)")})
     with open(os.path.join(OUT, "manifest.json"), "w", encoding="utf-8") as fh:
         json.dump(manifest, fh, indent=2, ensure_ascii=False)
     for m in manifest:

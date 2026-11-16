@@ -1,0 +1,109 @@
+1. DATA COLLECTION AND CLEANING
+Collection window: 2026-11-12 17:46 to 2026-11-12 20:41 (Asia/Almaty)
+Team test sessions in database (never analysed): 30
+Enrolled (consented + eligible): 23
+condition  enrolled  incomplete  missing_ratings  too_fast  excluded_total  analysed  straightlining_flag
+ No label        11           1                1         1               2         9                    0
+ AI label        12           0                0         0               0        12                    0
+    Total        23           1                1         1               2        21                    0
+Duplicates: study codes are unique by construction (primary key); duplicate (code, profile, item) rating rows: 0
+Out-of-range rating values (outside 1-7): 0
+Sessions without timing events (speed rule not applicable): 2
+
+2. SAMPLE DESCRIPTION (analysed participants)
+    variable        level No label AI label
+      gender       Female   0 (0%)  7 (58%)
+      gender         Male  8 (89%)   0 (0%)
+      gender Not reported  1 (11%)  5 (42%)
+  study_year            1  2 (22%)  3 (25%)
+  study_year            2  3 (33%)  3 (25%)
+  study_year            3  3 (33%)  5 (42%)
+  study_year           4+   0 (0%)   1 (8%)
+  study_year Not reported  1 (11%)   0 (0%)
+app_use_freq        Daily  1 (11%)   0 (0%)
+app_use_freq      Monthly  2 (22%)  4 (33%)
+app_use_freq Not reported  2 (22%)   1 (8%)
+app_use_freq       Rarely  2 (22%)  5 (42%)
+app_use_freq       Weekly  2 (22%)  2 (17%)
+label_recall           no  1 (11%)  2 (17%)
+label_recall     not_sure  3 (33%)  2 (17%)
+label_recall          yes  5 (56%)  8 (67%)
+
+Scale scores by condition (mean, SD, median, min-max):
+               auth_score                                trust_score                               
+                    count  mean   std median   min   max       count  mean   std median   min   max
+condition_name                                                                                     
+ai_label               12  4.40  0.81   4.36  3.22  6.39          12  4.55  0.76   4.42  3.89  6.56
+no_label                9  3.63  0.85   3.89  2.00  4.44           9  3.92  0.74   4.06  2.28  5.00
+  auth_score No label: skew=-1.13, Shapiro-Wilk p=0.019
+  auth_score AI label: skew=1.08, Shapiro-Wilk p=0.211
+  trust_score No label: skew=-1.04, Shapiro-Wilk p=0.125
+  trust_score AI label: skew=1.66, Shapiro-Wilk p=0.007
+
+Exploratory behaviour logs by condition (mean, SD):
+               likes      mean_view_ms         
+                mean  std         mean      std
+condition_name                                 
+ai_label         3.4  1.4       7320.7   3736.0
+no_label         2.4  1.7      25449.3  48064.4
+
+3. OBJECTIVE 2 - MEASUREMENT
+ item construct  mean   sd  alpha_participant_level  alpha_rating_level
+    1      AUTH  4.21 1.15                     0.83                0.54
+    2      AUTH  3.93 1.12                     0.83                0.54
+    3      AUTH  4.07 0.81                     0.83                0.54
+    4     TRUST  4.23 0.87                     0.89                0.45
+    5     TRUST  4.14 0.92                     0.89                0.45
+    6     TRUST  4.47 0.85                     0.89                0.45
+Authenticity-trust correlation: r = 0.64 [p = 0.002], n = 21
+Interpretation guide: alpha >= .70 acceptable; r > .85 would suggest the two scales overlap strongly.
+
+4. OBJECTIVE 3 - MAIN COMPARISON (AI label minus no label)
+Minimum detectable effect with the achieved n (80% power, two-sided .05): d = 1.30
+Perceived authenticity: label M=4.40 (SD 0.81, n=12) vs no label M=3.63 (SD 0.85, n=9)
+   diff = +0.77 [95% CI -0.00, +1.55], Welch t(16.9) = 2.11, p = 0.050, Holm p = 0.100
+   Hedges g = +0.90 [-0.01, +1.81]; Mann-Whitney U = 82, p = 0.055
+   Bayesian (prior N(0,1)): +0.68 [95% CrI +0.01, +1.36], P(label lowers score) = 0.02
+Perceived trustworthiness: label M=4.55 (SD 0.76, n=12) vs no label M=3.92 (SD 0.74, n=9)
+   diff = +0.63 [95% CI -0.06, +1.32], Welch t(17.7) = 1.92, p = 0.071, Holm p = 0.100
+   Hedges g = +0.81 [-0.09, +1.71]; Mann-Whitney U = 78, p = 0.101
+   Bayesian (prior N(0,1)): +0.57 [95% CrI -0.04, +1.18], P(label lowers score) = 0.03
+
+5. ROBUSTNESS / SENSITIVITY
+                                    check     outcome  n_label  n_nolabel  diff  ci_low  ci_high    g    p  mw_p
+                            Main analysis  auth_score       12          9  0.77   -0.00     1.55 0.90 0.05  0.05
+                            Main analysis trust_score       12          9  0.63   -0.06     1.32 0.81 0.07  0.10
+Label group: only those who noticed label  auth_score        8          9  0.53   -0.24     1.30 0.67 0.16  0.27
+Label group: only those who noticed label trust_score        8          9  0.50   -0.14     1.15 0.75 0.12  0.18
+                       No speed exclusion  auth_score       12         10  0.79    0.07     1.51 0.94 0.03  0.03
+                       No speed exclusion trust_score       12         10  0.63   -0.01     1.28 0.83 0.05  0.06
+                      Speed threshold 3 s  auth_score       12         10  0.79    0.07     1.51 0.94 0.03  0.03
+                      Speed threshold 3 s trust_score       12         10  0.63   -0.01     1.28 0.83 0.05  0.06
+                      Speed threshold 8 s  auth_score        2          3  2.07   -2.80     6.95 1.21 0.21  0.20
+                      Speed threshold 8 s trust_score        2          3  1.21   -7.44     9.86 0.97 0.42  0.37
+                  Straight-liners removed  auth_score       12          9  0.77   -0.00     1.55 0.90 0.05  0.05
+                  Straight-liners removed trust_score       12          9  0.63   -0.06     1.32 0.81 0.07  0.10
+                       Without profile P1  auth_score       12          9  0.88    0.04     1.72 0.93 0.04  0.07
+                       Without profile P1 trust_score       12          9  0.76    0.04     1.48 0.93 0.04  0.04
+                       Without profile P2  auth_score       12          9  0.79   -0.01     1.59 0.88 0.05  0.08
+                       Without profile P2 trust_score       12          9  0.59   -0.07     1.26 0.78 0.08  0.06
+                       Without profile P3  auth_score       12          9  0.90    0.12     1.67 1.05 0.03  0.02
+                       Without profile P3 trust_score       12          9  0.61   -0.09     1.31 0.77 0.08  0.15
+                       Without profile P4  auth_score       12          9  0.80   -0.01     1.61 0.88 0.05  0.13
+                       Without profile P4 trust_score       12          9  0.57   -0.14     1.28 0.70 0.11  0.16
+                       Without profile P5  auth_score       12          9  0.61   -0.15     1.38 0.73 0.11  0.16
+                       Without profile P5 trust_score       12          9  0.72    0.02     1.43 0.91 0.04  0.04
+                       Without profile P6  auth_score       12          9  0.66   -0.11     1.42 0.78 0.09  0.16
+                       Without profile P6 trust_score       12          9  0.53   -0.20     1.25 0.67 0.14  0.19
+Mixed model (auth, profile-level, random intercept per participant): condition = +0.77 [+0.06, +1.49], p = 0.033
+Mixed model (trust, profile-level, random intercept per participant): condition = +0.63 [-0.02, +1.28], p = 0.056
+
+6. MANIPULATION CHECK (label recall)
+label_recall  no  not_sure  yes
+condition                      
+AI label       2         2    8
+No label       1         3    5
+Fisher exact test (said 'yes' by condition): p = 0.6731
+Label hover/click events in label condition: mean 0.67 per participant
+
+Open answers available for thematic coding: 2

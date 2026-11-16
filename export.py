@@ -23,14 +23,19 @@ def build_rows(con, include_test=False):
         r = {"study_code": code, "condition": p["condition"], "condition_name": config.CONDITIONS[p["condition"]],
              "is_test": p["is_test"], "status": p["status"]}
         for construct in ("AUTH", "TRUST"):
-            v = con.execute("SELECT AVG(value), COUNT(*) FROM ratings WHERE study_code=? AND construct=?",
+            v = con.execute("SELECT AVG(value), COUNT(*) FROM ratings WHERE study_code=? AND construct=?"" AND profile_id NOT LIKE 'R%'",
                             (code, construct)).fetchone()
             r[f"{construct.lower()}_score"] = round(v[0], 4) if v[0] is not None else None
             r[f"{construct.lower()}_n_items"] = v[1]
         for n, _, _ in config.ITEMS:  # item means across profiles (for Cronbach's alpha)
-            v = con.execute("SELECT AVG(value) FROM ratings WHERE study_code=? AND item_no=?", (code, n)).fetchone()[0]
+            v = con.execute("SELECT AVG(value) FROM ratings WHERE study_code=? AND item_no=?"" AND profile_id NOT LIKE 'R%'", (code, n)).fetchone()[0]
             r[f"item{n}"] = round(v, 4) if v is not None else None
-        r["likes"] = con.execute("SELECT COUNT(DISTINCT profile_id) FROM ratings WHERE study_code=? AND decision='like'",
+        # v4 exploratory block: ratings of the two REAL stock photos (not part of the main scores)
+        for construct in ("AUTH", "TRUST"):
+            v = con.execute("SELECT AVG(value) FROM ratings WHERE study_code=? AND construct=? AND profile_id LIKE 'R%'",
+                            (code, construct)).fetchone()[0]
+            r[f"real_{construct.lower()}"] = round(v, 4) if v is not None else None
+        r["likes"] = con.execute("SELECT COUNT(DISTINCT profile_id) FROM ratings WHERE study_code=? AND decision='like'"" AND profile_id NOT LIKE 'R%'",
                                  (code,)).fetchone()[0]
         vt = con.execute("SELECT AVG(value_ms), MIN(value_ms) FROM events WHERE study_code=? AND event_type='view_end'",
                          (code,)).fetchone()
@@ -38,8 +43,19 @@ def build_rows(con, include_test=False):
         r["min_view_ms"] = vt[1]
         ps = con.execute("SELECT * FROM post_survey WHERE study_code=?", (code,)).fetchone()
         r["label_recall"] = ps["label_recall"] if ps else None
-        for k in ("gender", "study_year", "app_use_freq"):
+        r["label_text"] = ps["label_text"] if ps and "label_text" in ps.keys() else None
+        for k in ("study_year", "app_use_freq"):
             r[k] = ps[k] if ps else None
+        keys = p.keys()
+        g = p["gender"] if "gender" in keys else None
+        r["gender"] = {"F": "Female", "M": "Male", "N": None}.get(g, ps["gender"] if ps else None)
+        r["wave"] = p["wave"] if "wave" in keys else 1
+        r["source"] = p["source"] if "source" in keys else None
+        r["attention_value"] = p["attention_value"] if "attention_value" in keys else None
+        # v4 manipulation check: correct = label group names the AI label; no-label group reports no label
+        lt = r["label_text"]
+        r["mc_correct"] = (None if lt is None else
+                           int(lt == "ai") if p["condition"] == 1 else int(lt == "none" or r["label_recall"] == "no"))
         r["has_open_text"] = int(bool(ps and ps["open_text"]))
         r["label_hovers"] = con.execute("SELECT COUNT(*) FROM events WHERE study_code=? AND event_type IN ('label_hover','label_click')",
                                         (code,)).fetchone()[0]
@@ -52,8 +68,15 @@ def build_rows(con, include_test=False):
         if r["mean_view_ms"] is not None and r["mean_view_ms"] < MIN_MEAN_SECONDS_PER_PROFILE * 1000:
             reasons.append("too_fast")
         # Quality flag (reported, used only in a sensitivity analysis): identical answer to all 36 items
-        sd = con.execute("SELECT COUNT(DISTINCT value) FROM ratings WHERE study_code=?", (code,)).fetchone()[0]
+        sd = con.execute("SELECT COUNT(DISTINCT value) FROM ratings WHERE study_code=?"" AND profile_id NOT LIKE 'R%'", (code,)).fetchone()[0]
         r["straightlining"] = int(r["auth_n_items"] + r["trust_n_items"] == 36 and sd == 1)
+        if "attention_value" in keys and p["status"] == "completed" and r["attention_value"] != config.ATTENTION_CORRECT:
+            reasons.append("attention_fail")
+        if "device_token" in keys and p["device_token"]:
+            first = con.execute("SELECT study_code FROM participants WHERE device_token=? AND is_test=? "
+                                "ORDER BY created_at LIMIT 1", (p["device_token"], p["is_test"])).fetchone()[0]
+            if first != code:
+                reasons.append("repeat_device")
         r["exclude"] = int(bool(reasons))
         r["exclude_reason"] = ";".join(reasons)
         rows.append(r)

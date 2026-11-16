@@ -33,7 +33,7 @@ def test_T1_label_shown_only_in_label_condition(client, con):
 def test_T2a_stimulus_hashes_match_manifest(con):
     with open(config.STIMULI_MANIFEST, encoding="utf-8") as fh:
         manifest = json.load(fh)
-    assert len(manifest) == 6
+    assert len(manifest) == 8
     for m in manifest:
         with open(os.path.join(config.STIMULI_DIR, m["image_file"]), "rb") as fh:
             assert hashlib.sha256(fh.read()).hexdigest() == m["image_sha256"]
@@ -77,12 +77,15 @@ def complete_session(client, code, values):
     for pos in range(1, 7):
         form = {f"item{n}": str(values[(pos, n)]) for n in range(1, 7)}
         form["decision"] = "like" if pos % 2 else "skip"
+        if pos == config.ATTENTION_POSITION:
+            form["attn"] = "2"
+        client.get(f"/s/{code}/profile/{pos}")
         r = client.post(f"/s/{code}/profile/{pos}", data=form)
         assert r.status_code == 302
         client.post("/api/events", json={"study_code": code, "events": [
             {"type": "view_start", "profile_id": f"x{pos}", "ts": 1},
             {"type": "view_end", "profile_id": f"x{pos}", "value_ms": 9000 + pos, "ts": 2}]})
-    r = client.post(f"/s/{code}/post", data={"label_recall": "yes", "open_text": "test session"})
+    r = client.post(f"/s/{code}/post", data={"label_recall": "yes", "label_text": "ai", "open_text": "test session"})
     assert r.status_code == 302 and r.location.endswith("/debrief")
 
 
@@ -117,6 +120,7 @@ def test_T4b_invalid_or_incomplete_input_not_saved(client, con):
     bad = {f"item{n}": "4" for n in range(1, 7)}
     bad["item3"] = "8"
     bad["decision"] = "like"
+    client.get(f"/s/{code}/profile/1")
     r = client.post(f"/s/{code}/profile/1", data=bad)
     assert "error=incomplete" in r.location
     del bad["item3"]

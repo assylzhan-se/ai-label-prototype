@@ -34,3 +34,4 @@ button, .button { display: inline-block; background: #2f6fde; color: #fff; borde
   padding: 10px 18px; font: inherit; text-decoration: none; cursor: pointer; }
 .error { color: #b3261e; font-weight: 600; }
 .code { font-family: ui-monospace, monospace; }
+button:disabled { background: #9aa3ab; cursor: not-allowed; }

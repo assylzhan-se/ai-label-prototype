@@ -22,7 +22,10 @@ def generate_sequence(seed, n_slots, block_size=config.BLOCK_SIZE):
 
 
 def ensure_allocation(con, seed=config.RANDOM_SEED, n_slots=config.ALLOCATION_SLOTS):
-    for stream, s in (("real", seed), ("test", seed + 1)):
+    streams = [("real", seed), ("test", seed + 1)]
+    for i, g in enumerate(config.GENDER_STRATA):          # v4: stratified by gender
+        streams += [(f"real_{g}", seed + 10 + i), (f"test_{g}", seed + 20 + i)]
+    for stream, s in streams:
         n = con.execute("SELECT COUNT(*) FROM allocation WHERE stream=?", (stream,)).fetchone()[0]
         if n == 0:
             con.executemany(
@@ -32,9 +35,9 @@ def ensure_allocation(con, seed=config.RANDOM_SEED, n_slots=config.ALLOCATION_SL
     con.commit()
 
 
-def assign_next(con, study_code, is_test):
-    """Atomically take the next unused slot of the stream."""
-    stream = "test" if is_test else "real"
+def assign_next(con, study_code, is_test, stratum=None):
+    """Atomically take the next unused slot of the stream (one stream per gender stratum in v4)."""
+    stream = ("test" if is_test else "real") + (f"_{stratum}" if stratum else "")
     row = con.execute(
         "SELECT slot, condition FROM allocation WHERE stream=? AND used_by IS NULL "
         "ORDER BY slot LIMIT 1", (stream,)).fetchone()
@@ -47,6 +50,9 @@ def assign_next(con, study_code, is_test):
 
 def profile_order(profile_ids, study_code, seed=config.RANDOM_SEED):
     """Individually randomized but reproducible order for one participant."""
-    ids = sorted(profile_ids)
-    random.Random(f"{seed}:{study_code}").shuffle(ids)
-    return ids
+    rng = random.Random(f"{seed}:{study_code}")
+    main = sorted(i for i in profile_ids if not i.startswith("R"))
+    real = sorted(i for i in profile_ids if i.startswith("R"))     # v4 exploratory block, always last
+    rng.shuffle(main)
+    rng.shuffle(real)
+    return main + real
